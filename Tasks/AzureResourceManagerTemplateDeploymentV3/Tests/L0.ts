@@ -292,4 +292,23 @@ describe('Azure Resource Manager Template Deployment', function () {
     //         throw error;
     //     }
     // });
+
+    it('Successfully triggered what-if analysis', async () => {
+        let tp = path.join(__dirname, 'whatIf.js');
+        process.env["csmFile"] = "CSM.json";
+        process.env["csmParametersFile"] = "CSM.json";
+        let tr = new ttm.MockTestRunner(tp);
+        await tr.runAsync();
+        try {
+            assert(tr.succeeded, "Should have succeeded");
+            assert(tr.stdout.indexOf("Starting what-if analysis") > 0, "should have started what-if analysis");
+            assert(tr.stdout.indexOf("What-if analysis completed successfully") > 0, "what-if analysis should have completed successfully");
+            assert(tr.stdout.indexOf("deployments.createOrUpdate is called") < 0, "deployments.createOrUpdate function should not have been called for what-if");
+        }
+        catch (error) {
+            console.log("STDERR", tr.stderr);
+            console.log("STDOUT", tr.stdout);
+            throw error;
+        }
+    });
 });

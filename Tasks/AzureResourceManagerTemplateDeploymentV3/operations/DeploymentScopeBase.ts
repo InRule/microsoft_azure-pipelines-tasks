@@ -210,6 +210,7 @@ export class DeploymentScopeBase {
                 });
             } else {
                 // Fallback to using REST API directly if whatIf method is not available
+                console.log("What-if method not found on deployments client. Checking for alternative approaches...");
                 this.performWhatIfViaRestApi(whatIfRequest, resolve, reject);
             }
         });
@@ -242,25 +243,15 @@ export class DeploymentScopeBase {
 
     private performWhatIfViaRestApi(whatIfRequest: any, resolve: () => void, reject: (reason?: any) => void): void {
         // This is a fallback method to call the what-if API via REST if the SDK doesn't support it
-        try {
-            // Construct the what-if API endpoint based on deployment scope
-            let whatIfUrl = this.armClient.getRequestUrl();
-            if (this.taskParameters.deploymentScope === "Resource Group") {
-                whatIfUrl = whatIfUrl.replace('/deployments/', '/providers/Microsoft.Resources/deployments/') + '/whatIf';
-            } else if (this.taskParameters.deploymentScope === "Subscription") {
-                whatIfUrl = whatIfUrl.replace('/deployments/', '/providers/Microsoft.Resources/deployments/') + '/whatIf';
-            } else if (this.taskParameters.deploymentScope === "Management Group") {
-                whatIfUrl = whatIfUrl.replace('/deployments/', '/providers/Microsoft.Resources/deployments/') + '/whatIf';
-            }
-            
-            // For now, fall back to validation if REST API approach is complex
-            console.log(tl.loc("StartingValidation"));
-            console.log("What-if analysis is not fully supported by the current Azure SDK version. Performing validation instead.");
-            this.validateDeployment().then(resolve).catch(reject);
-        } catch (error) {
-            console.log("What-if analysis is not fully supported by the current Azure SDK version. Performing validation instead.");
-            this.validateDeployment().then(resolve).catch(reject);
-        }
+        console.log("What-if API not available in current SDK version. Falling back to validation mode.");
+        console.log("Note: This will validate the template but won't show the detailed change preview that what-if provides.");
+        
+        // Use the validation endpoint as a fallback
+        this.validateDeployment().then(() => {
+            console.log("Template validation completed successfully.");
+            console.log("To get full what-if analysis, consider using Azure CLI or newer SDK versions that support the what-if API.");
+            resolve();
+        }).catch(reject);
     }
 
     private async waitAndPerformAzureDeployment(retryCount): Promise<void> {

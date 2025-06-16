@@ -44,7 +44,7 @@ tr.registerMock('azure-pipelines-tasks-azure-arm-rest/azure-arm-resource', {
                     callback(null, {});
                 },
                 whatIf: function (deploymentName, params, options, callback) {
-                    // Mock what-if response
+                    // Mock what-if response - successful case with changes
                     const whatIfResult = {
                         properties: {
                             changes: [
@@ -52,11 +52,38 @@ tr.registerMock('azure-pipelines-tasks-azure-arm-rest/azure-arm-resource', {
                                     resourceId: "/subscriptions/sId/resourceGroups/dummy/providers/Microsoft.Storage/storageAccounts/teststorage",
                                     changeType: "Create",
                                     before: null,
-                                    after: { sku: { name: "Standard_LRS" }, kind: "StorageV2" }
+                                    after: { 
+                                        sku: { name: "Standard_LRS" }, 
+                                        kind: "StorageV2",
+                                        properties: {
+                                            accessTier: "Hot"
+                                        }
+                                    }
+                                },
+                                {
+                                    resourceId: "/subscriptions/sId/resourceGroups/dummy/providers/Microsoft.Web/sites/testwebapp",
+                                    changeType: "Modify",
+                                    before: { 
+                                        properties: {
+                                            siteConfig: {
+                                                appSettings: []
+                                            }
+                                        }
+                                    },
+                                    after: { 
+                                        properties: {
+                                            siteConfig: {
+                                                appSettings: [
+                                                    { name: "ENVIRONMENT", value: "production" }
+                                                ]
+                                            }
+                                        }
+                                    }
                                 }
                             ]
                         }
                     };
+                    console.log("deployments.whatIf is called");
                     callback(null, whatIfResult);
                 }
             }

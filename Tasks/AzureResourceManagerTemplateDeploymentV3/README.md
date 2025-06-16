@@ -68,7 +68,7 @@ The parameters of the task are described in details, including examples, to show
 
  * **Override Template Parameters**: The Override template parameters is used to override the parameters, like `-storageAcctName azurerg -Username $(vmusername) -azureKeyVaultName $(fabrikamFibre)`. To avoid storing "secureString" parameters in plain text, it is recommended that you use secret variables, for example `$(variableName)`. By clicking on “…” next to Override template parameters textbox, template parameters can be viewed/overridden in a grid.  This feature requires that CORS rules are enabled at the source. If templates are in Azure storage blob, refer to [this](https://docs.microsoft.com/en-us/rest/api/storageservices/fileservices/Cross-Origin-Resource-Sharing--CORS--Support-for-the-Azure-Storage-Services?redirectedfrom=MSDN#understanding-cors-requests) to enable CORS.
 
- * **Deployment Mode**: This specifies the [deployment mode](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-deploy) in which the Azure resources specified in the template have to be deployed. Incremental mode handles deployments as incremental updates to the resource group . It leaves unchanged resources that exist in the resource group but are not specified in the template. Complete mode deletes resources that are not in your template. [Validate mode](https://msdn.microsoft.com/en-us/library/azure/dn790547.aspx) enables you to find syntactical problems with the template before creating actual resources. By default, incremental mode is used.
+ * **Deployment Mode**: This specifies the [deployment mode](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-deploy) in which the Azure resources specified in the template have to be deployed. Incremental mode handles deployments as incremental updates to the resource group . It leaves unchanged resources that exist in the resource group but are not specified in the template. Complete mode deletes resources that are not in your template. [Validate mode](https://msdn.microsoft.com/en-us/library/azure/dn790547.aspx) enables you to find syntactical problems with the template before creating actual resources. **What-If mode** provides a preview of the changes that would be made by the deployment without actually deploying any resources. This mode shows you which resources would be created, modified, or deleted, helping you understand the impact before running the actual deployment. By default, incremental mode is used.
 
  ### Deployment Outputs:
   Outputs created by Azure Resource Manager template deployment. It can be used in the subsequent tasks (like Powershell and Azure CLI) for further processing.
@@ -130,6 +130,31 @@ The parameters of the task are described in details, including examples, to show
   $(outputvalue) => outputvalue
   ```
   
+### What-If Deployment Mode:
+The What-If deployment mode provides a preview of the changes that would be made by an ARM template deployment without actually deploying any resources. This feature helps you:
+
+- **Preview Changes**: See what resources would be created, modified, or deleted
+- **Validate Impact**: Understand the scope of changes before deployment
+- **Risk Mitigation**: Avoid unexpected changes to your Azure environment
+- **Cost Planning**: Understand what new resources will be created and their potential costs
+
+When you run a deployment in What-If mode, the task will:
+1. Validate the template syntax and parameters
+2. Compare the template with the current state of resources in the target scope
+3. Display a detailed list of changes that would be made
+4. Complete without making any actual changes to your Azure resources
+
+**Output Example:**
+```
+What-if results:
+  Create: /subscriptions/.../resourceGroups/myRG/providers/Microsoft.Storage/storageAccounts/mystorageaccount
+    Resource will be created
+  Modify: /subscriptions/.../resourceGroups/myRG/providers/Microsoft.Web/sites/mywebapp
+    Resource will be modified
+```
+
+**Note**: What-If mode requires Azure SDK support for the what-if API. If not available, the task will fall back to validation mode and provide a message about the limitation.
+
 ### Supported Azure and AzureRM module versions:
 |  Azure Pipelines/TFS Release  |  Recommended Azure Version  |  Other Supported Versions |
 |:------------------:|:---------------------------:|:-------------------------:|

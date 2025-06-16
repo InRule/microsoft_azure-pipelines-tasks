@@ -292,4 +292,48 @@ describe('Azure Resource Manager Template Deployment', function () {
     //         throw error;
     //     }
     // });
+
+    it('Successfully triggered what-if analysis', async () => {
+        let tp = path.join(__dirname, 'whatIf.js');
+        process.env["csmFile"] = "CSM.json";
+        process.env["csmParametersFile"] = "CSM.json";
+        let tr = new ttm.MockTestRunner(tp);
+        await tr.runAsync();
+        try {
+            assert(tr.succeeded, "Should have succeeded");
+            assert(tr.stdout.indexOf("Starting what-if analysis") > 0, "should have started what-if analysis");
+            assert(tr.stdout.indexOf("What-if analysis completed successfully") > 0, "what-if analysis should have completed successfully");
+            assert(tr.stdout.indexOf("deployments.whatIf is called") > 0, "deployments.whatIf function should have been called from azure-sdk");
+            assert(tr.stdout.indexOf("What-if results:") > 0, "should have displayed what-if results header");
+            assert(tr.stdout.indexOf("Create: /subscriptions/sId/resourceGroups/dummy/providers/Microsoft.Storage/storageAccounts/teststorage") > 0, "should have shown create change");
+            assert(tr.stdout.indexOf("Modify: /subscriptions/sId/resourceGroups/dummy/providers/Microsoft.Web/sites/testwebapp") > 0, "should have shown modify change");
+            assert(tr.stdout.indexOf("deployments.createOrUpdate is called") < 0, "deployments.createOrUpdate function should not have been called for what-if");
+        }
+        catch (error) {
+            console.log("STDERR", tr.stderr);
+            console.log("STDOUT", tr.stdout);
+            throw error;
+        }
+    });
+
+    it('Successfully handled what-if fallback when API not available', async () => {
+        let tp = path.join(__dirname, 'whatIfFallback.js');
+        process.env["csmFile"] = "whatif-template.json";
+        process.env["csmParametersFile"] = "";
+        let tr = new ttm.MockTestRunner(tp);
+        await tr.runAsync();
+        try {
+            assert(tr.succeeded, "Should have succeeded");
+            assert(tr.stdout.indexOf("Starting what-if analysis") > 0, "should have started what-if analysis");
+            assert(tr.stdout.indexOf("What-if method not found on deployments client") > 0, "should have detected missing what-if method");
+            assert(tr.stdout.indexOf("What-if API not available in current SDK version") > 0, "should have shown fallback message");
+            assert(tr.stdout.indexOf("deployments.validate is called") > 0, "should have fallen back to validation");
+            assert(tr.stdout.indexOf("deployments.createOrUpdate is called") < 0, "deployments.createOrUpdate function should not have been called for what-if");
+        }
+        catch (error) {
+            console.log("STDERR", tr.stderr);
+            console.log("STDOUT", tr.stdout);
+            throw error;
+        }
+    });
 });

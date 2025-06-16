@@ -1,0 +1,1 @@
+{"root":["./main.ts","./Tests/L0.ts","./Tests/createOrUpdate.ts","./Tests/deleteResourceGroup.ts","./models/TaskParameters.ts","./models/Types.ts","./operations/DeploymentParameters.ts","./operations/DeploymentScopeBase.ts","./operations/FileEncoding.ts","./operations/ParameterParser.ts","./operations/ResourceGroup.ts","./operations/Utils.ts"],"errors":true,"version":"5.8.3"}
